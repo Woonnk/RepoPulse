@@ -1,0 +1,3 @@
+[scan]
+# Test fixtures intentionally model incomplete projects.
+exclude = ["fixtures"]

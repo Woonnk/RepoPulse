@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "repopulse"
+version = "0.2.0"
+description = "Local-first repository inventory and GitHub readiness reports"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["tomli>=2; python_version < '3.11'"]
+license = "MIT"
+license-files = ["LICENSE"]
+classifiers = ["Programming Language :: Python :: 3", "Operating System :: OS Independent"]
+
+[project.scripts]
+repopulse = "repopulse.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["repopulse*"]
+
+[tool.setuptools.package-data]
+repopulse = ["report.html", "report.js"]

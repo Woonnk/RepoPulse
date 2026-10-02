@@ -1,0 +1,5 @@
+include LICENSE README.md CONTRIBUTING.md CHANGELOG.md repopulse.toml
+recursive-include repopulse *.html *.js
+recursive-include tests *.py *.toml *.json *.go *.mod *.rs *.tsx *.md
+recursive-include scripts *.py *.cjs
+recursive-include docs *.md
