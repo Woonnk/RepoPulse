@@ -12,7 +12,8 @@
 - Standalone HTML reports with source links, searchable findings, severity filters,
   sorted/paginated files, markers, changes, keyboard tabs, and responsive layout.
 - Installed-wheel smoke checks and a Windows/macOS/Linux CI matrix, plus Chromium
-  report tests and screenshot artifacts. Remote CI results are pending publication.
+  report tests and screenshot artifacts. All 10 GitHub Actions jobs passed;
+  see [verification results](docs/VERIFICATION.md).
 - Python 3.10 uses the conditional tomli dependency; Python 3.11+ uses stdlib TOML.
 
 Schema v1 snapshots are not compatible with comparisons. Generate a new baseline.

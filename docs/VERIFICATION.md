@@ -2,8 +2,8 @@
 
 ## Local Environment
 
-Linux, Python 3.12.14, Node 24.19.0. These results are local evidence, not a claim
-that the GitHub Actions matrix has run.
+Linux, Python 3.12.14, Node 24.19.0. Local checks are listed below;
+the GitHub Actions results are recorded separately.
 
 ## Passed
 
@@ -25,18 +25,21 @@ that the GitHub Actions matrix has run.
 - RepoPulse's self-scan passes `--fail-under 100 --fail-on warning` using the
   included configuration to exclude deliberately incomplete test fixtures.
 
-## Pending
+## GitHub Actions
 
-- Native Windows/macOS behavior and Python 3.10/3.11/3.13 are configured in the
-  nine-job GitHub Actions matrix and remain unverified until those jobs run.
-- Actual Chromium rendering/interaction, mobile screenshots, and CSP enforcement
-  remain unverified locally. The available Playwright runner had no browser binary;
-  downloading Chromium failed because the supplied download was not a valid ZIP.
-  No browser success or visual QA is claimed.
-- The browser CI job checks 1440/390/320-pixel widths, page overflow, severity/search
+[Release checks run 37036562782](https://github.com/Woonnk/RepoPulse/actions/runs/37036562782)
+passed all 10 jobs for commit `6187b005cf17227e62d53890dce40a0c77752505`.
+
+- The nine-job matrix passed on Windows, macOS, and Ubuntu with Python
+  3.10, 3.11, and 3.13, including all 40 tests, wheel/source-distribution
+  installation smoke checks, and the repository self-scan.
+- Chromium browser checks passed at 1440/390/320-pixel widths: page overflow, severity/search
   filters, file pagination/sorting, source links, marker rendering, comparison and
   empty states, keyboard tabs, script injection, and absence of HTTP requests.
-  It uploads generated reports/screenshots as evidence, including on failures.
+  Generated reports and screenshots are available in the run's browser-evidence artifact.
+- The first browser run exposed narrow-screen overflow. The report layout was
+  corrected and the passing run above verified the fix. Browser verification
+  was performed in CI because local Chromium installation was unavailable.
 
 ## Reproduce
 
