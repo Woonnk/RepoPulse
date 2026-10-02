@@ -29,7 +29,7 @@ Build and install the wheel, then run the smoke checks outside the source import
 ```sh
 python -m pip install build
 python -m build
-python -m pip install --force-reinstall dist/repopulse-0.2.0-py3-none-any.whl
+python -m pip install --force-reinstall dist/repopulse-0.3.0-py3-none-any.whl
 python scripts/verify_install.py
 ```
 

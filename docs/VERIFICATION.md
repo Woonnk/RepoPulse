@@ -7,7 +7,13 @@ the GitHub Actions results are recorded separately.
 
 ## Passed
 
-- All 40 unit/integration tests pass, covering Python/Node/Rust/Go fixtures, nested project detection,
+- Version 0.3.0 adds tests for starter config creation/overwrite protection,
+  new-finding thresholds and incompatible baselines, SARIF rule indices,
+  severity, fingerprints, encoded paths, empty results, and unread coverage.
+- SARIF exports with locationless, file, baseline, and empty results were
+  validated locally against the [official OASIS SARIF 2.1.0 JSON schema](https://github.com/oasis-tcs/sarif-spec/blob/main/sarif-2.1/schema/sarif-schema-2.1.0.json).
+  Actual uploads to third-party code-scanning services have not been tested.
+- All 50 unit/integration tests pass, covering Python/Node/Rust/Go fixtures, nested project detection,
   malformed/unread manifests, documentation checks, config precedence/validation,
   selective checks, score/severity exit codes, Git ignore fallback, symlinks,
   binary/read limits, capped marker counts, and non-overwriting report exports.
@@ -25,7 +31,7 @@ the GitHub Actions results are recorded separately.
 - RepoPulse's self-scan passes `--fail-under 100 --fail-on warning` using the
   included configuration to exclude deliberately incomplete test fixtures.
 
-## GitHub Actions
+## GitHub Actions (0.2.0)
 
 [Release checks run 37036562782](https://github.com/Woonnk/RepoPulse/actions/runs/37036562782)
 passed all 10 jobs for commit `6187b005cf17227e62d53890dce40a0c77752505`.
@@ -50,13 +56,14 @@ node --check scripts/verify_browser.cjs
 python -m pip install build
 python -m build
 # Run the following two commands inside a clean activated virtual environment:
-python -m pip install dist/repopulse-0.2.0-py3-none-any.whl
+python -m pip install dist/repopulse-0.3.0-py3-none-any.whl
 python scripts/verify_install.py
 python -m repopulse . --fail-under 100 --fail-on warning
 ```
 
 For browser setup and commands, see [CONTRIBUTING.md](../CONTRIBUTING.md).
 Output directories for the fixture generator/browser runner must be fresh.
+Current remote results are available in [GitHub Actions](https://github.com/Woonnk/RepoPulse/actions/workflows/tests.yml).
 
 Reports are heuristic and may be partial. A passing repository basics score or
 test suite is not a security audit, proof of coverage, or a verified license review.

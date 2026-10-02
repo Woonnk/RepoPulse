@@ -23,6 +23,19 @@ DEFAULTS = {
     "fail_on": None,
 }
 
+STARTER_CONFIG = '''# RepoPulse settings. CLI options override these values.
+[scan]
+exclude = []
+large_bytes = 1000000
+max_read_bytes = 1000000
+max_markers = 200
+# Uncomment thresholds to enforce repository standards:
+# fail_under = 80
+# fail_on = "error"
+# Optional: run only selected checks (use repopulse --list-checks).
+# enabled_checks = ["readme", "tests", "node-lockfile"]
+'''
+
 
 def validate(settings):
     unknown = set(settings) - set(DEFAULTS)

@@ -2,7 +2,7 @@
 
 Find out what a repository needs before you share it. RepoPulse scans local files
 and explains missing documentation, project metadata, test setup, and dependency
-lockfiles with concrete suggestions. Export to text, Markdown, JSON, or a standalone
+lockfiles with concrete suggestions. Export to text, Markdown, JSON, SARIF, or a standalone
 HTML report, and compare scans to see what changed.
 
 No accounts, API keys, network requests during scanning, or project code execution.
@@ -29,6 +29,7 @@ repopulse .
 repopulse . --format markdown --output ../report.md
 repopulse . --format json
 repopulse . --format html --output ../report.html
+repopulse . --format sarif --output ../report.sarif
 repopulse . --exclude vendor --exclude coverage --large-bytes 500000
 repopulse . --fail-under 80 --fail-on error
 ```
@@ -73,6 +74,16 @@ removes its findings; disabling a repository basic also removes it from the scor
 
 ## Configuration
 
+Create a starter config with commented examples (the target directory must exist):
+
+```sh
+repopulse . --init-config
+```
+
+This creates `repopulse.toml` and exits without scanning. Existing files and symlinks
+are never overwritten. Run it separately from scan/report options. The starter
+keeps all checks enabled and adds no failing thresholds until you choose them.
+
 Place `repopulse.toml` at the root of the directory being scanned:
 
 ```toml
@@ -106,6 +117,7 @@ repopulse . --snapshot .repopulse/before.json
 # Make changes to your project, then:
 repopulse . --baseline .repopulse/before.json --format html --output .repopulse/after.html
 repopulse . --baseline .repopulse/before.json --format json --snapshot .repopulse/after.json
+repopulse . --baseline .repopulse/before.json --fail-on-new warning --fail-on none
 ```
 
 Comparisons show added/removed inventory entries, growing files, new/resolved
@@ -145,6 +157,29 @@ any finding. Exit codes: `0` success; `1` failed score/severity threshold; `2` i
 arguments, configuration, baseline, scan directory, or output write failure.
 Read warnings do not change the exit code; inspect them when completeness matters.
 
+`--fail-on-new info|warning|error` requires `--baseline` and fails only for newly
+introduced finding identities at that severity or higher. Existing findings do
+not fail this threshold. Score and ordinary `--fail-on` thresholds still apply;
+use `--fail-on none` to disable a configured ordinary severity threshold. Reports
+are still written before returning exit code 1. TODO/FIXME markers are not findings.
+Content findings in files unread in either scan are omitted from the comparison;
+this option does not guarantee that a partial scan is free of new issues.
+
+## SARIF Export
+
+```sh
+repopulse . --format sarif --output ../report.sarif
+```
+
+SARIF 2.1.0 output includes check IDs, severity (`info` maps to `note`), evidence,
+suggestions, stable fingerprints, and URI-encoded relative file paths when a file
+is known. Repository-wide findings have no invented file location. With a baseline,
+reliably compared results carry `new` or `unchanged` baseline states. Scan warnings
+are included as tool notifications. The export contains findings rather than the
+complete inventory or TODO/FIXME list; use JSON for full snapshots. It does not
+upload anything or enable GitHub code scanning automatically. Whether a consumer
+displays findings without file locations depends on that consumer.
+
 ## Scan Behavior
 
 - At a Git repository root, tracked and untracked/non-ignored files are used.
@@ -180,7 +215,7 @@ python -m unittest discover -s tests -v
 The release workflow builds a wheel/sdist and runs fixture tests and installed-package
 checks on Windows, macOS, and Linux with Python 3.10, 3.11, and 3.13. A separate
 Chromium job verifies the standalone report on desktop/mobile and uploads screenshots.
-See [verification notes](docs/VERIFICATION.md) for local results and pending remote
-checks, and [CONTRIBUTING.md](CONTRIBUTING.md) for development commands.
+See [verification notes](docs/VERIFICATION.md) for recorded results,
+and [CONTRIBUTING.md](CONTRIBUTING.md) for development commands.
 
 Licensed under [MIT](LICENSE). Changes are recorded in [CHANGELOG.md](CHANGELOG.md).

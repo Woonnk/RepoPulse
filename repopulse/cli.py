@@ -9,8 +9,9 @@ from . import __version__
 from .scanner import scan
 from .checks import SEVERITIES
 from .compare import compare, load_snapshot
-from .config import CHECK_IDS, load_config, validate
+from .config import CHECK_IDS, STARTER_CONFIG, load_config, validate
 from .html_report import render_html
+from .sarif import render_sarif
 
 
 def _safe(value):
@@ -121,7 +122,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Scan local repository basics without executing project code.")
     parser.add_argument("path", nargs="?", default=".", help="directory to scan (default: current directory)")
     parser.add_argument("--version", action="version", version=f"RepoPulse {__version__}")
-    parser.add_argument("--format", choices=("text", "markdown", "json", "html"), default="text")
+    parser.add_argument("--format", choices=("text", "markdown", "json", "html", "sarif"), default="text")
     parser.add_argument("-o", "--output", type=Path, help="write report to a NEW file (existing files are never overwritten)")
     parser.add_argument("--exclude", action="append", default=[], metavar="NAME", help="exclude a file or directory basename; repeatable")
     parser.add_argument("--large-bytes", type=bounded_int(1))
@@ -129,6 +130,8 @@ def main(argv=None):
     parser.add_argument("--max-markers", type=bounded_int(0))
     parser.add_argument("--fail-under", type=bounded_int(0, 100), metavar="SCORE", help="exit 1 when readiness is below SCORE")
     parser.add_argument("--fail-on", choices=("info", "warning", "error", "none"), help="exit 1 when findings reach this severity; none disables configured threshold")
+    parser.add_argument("--fail-on-new", choices=("info", "warning", "error"), help="exit 1 for new findings at this severity; requires --baseline")
+    parser.add_argument("--init-config", action="store_true", help="create a NEW starter repopulse.toml in the target directory and exit")
     config_group = parser.add_mutually_exclusive_group()
     config_group.add_argument("--config", type=Path, help="explicit TOML config (default: repopulse.toml in scan root)")
     config_group.add_argument("--no-config", action="store_true", help="ignore automatic configuration")
@@ -142,6 +145,21 @@ def main(argv=None):
         return 0
     try:
         root = Path(args.path).expanduser().resolve()
+        if args.init_config:
+            incompatible = (args.output or args.snapshot or args.baseline or args.config or args.no_config
+                            or args.exclude or args.check is not None or args.format != "text"
+                            or any(getattr(args, name) is not None for name in
+                                   ("large_bytes", "max_read_bytes", "max_markers", "fail_under", "fail_on", "fail_on_new")))
+            if incompatible:
+                raise ValueError("--init-config cannot be combined with scan or report options")
+            if not root.is_dir():
+                raise ValueError("Configuration target must be an existing directory")
+            path = root / "repopulse.toml"
+            write_outputs([(path, STARTER_CONFIG)])
+            print(f"Created {_safe(path)}")
+            return 0
+        if args.fail_on_new and not args.baseline:
+            raise ValueError("--fail-on-new requires --baseline")
         settings = load_config(root, args.config, args.no_config)
         for name in ("large_bytes", "max_read_bytes", "max_markers", "fail_under", "fail_on"):
             value = getattr(args, name)
@@ -158,7 +176,9 @@ def main(argv=None):
         snapshot = json.dumps(report, indent=2, ensure_ascii=True) + "\n"
         if baseline is not None:
             report["comparison"] = compare(baseline, report)
-        if args.format == "json":
+        if args.format == "sarif":
+            output = json.dumps(render_sarif(report), indent=2, ensure_ascii=True) + "\n"
+        elif args.format == "json":
             output = json.dumps(report, indent=2, ensure_ascii=True) + "\n"
         elif args.format == "html":
             output = render_html(report, root)
@@ -177,4 +197,7 @@ def main(argv=None):
         return 2
     below_score = settings["fail_under"] is not None and report["score"] < settings["fail_under"]
     severe = settings["fail_on"] is not None and any(SEVERITIES[f["severity"]] >= SEVERITIES[settings["fail_on"]] for f in report["findings"])
-    return 1 if below_score or severe else 0
+    new_severe = args.fail_on_new is not None and any(
+        SEVERITIES[f["severity"]] >= SEVERITIES[args.fail_on_new]
+        for f in report["comparison"]["new_findings"])
+    return 1 if below_score or severe or new_severe else 0

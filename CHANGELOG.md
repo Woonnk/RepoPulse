@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0
+
+- SARIF 2.1.0 export with rule metadata, severity, stable fingerprints, relative
+  file locations, scan warnings, and baseline states for reliably compared findings.
+- `--fail-on-new` severity thresholds for newly introduced findings, using a
+  compatible baseline while preserving report exports and existing thresholds.
+- `--init-config` creates a starter configuration without scanning or overwriting
+  existing files. Config initialization is separate from scan/report options.
+- Ten new regression tests and installed-package smoke checks for these features.
+  JSON snapshot schema remains version 2; existing baselines remain compatible.
+
 ## 0.2.0
 
 - Actionable findings with stable identities, evidence, severity, and suggested fixes.
