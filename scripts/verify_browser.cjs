@@ -23,7 +23,16 @@ async function verify() {
       await page.waitForFunction(() => document.getElementById("result-count").textContent !== "");
       assert.equal(await page.locator("h1").textContent(), "demo-project");
       assert.equal(await page.evaluate(() => window.pwned), undefined);
-      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, "page overflows viewport");
+      const overflow = await page.evaluate(() => ({
+        viewport: window.innerWidth,
+        document: document.documentElement.scrollWidth,
+        elements: [...document.querySelectorAll("body *")].filter(node => {
+          const box = node.getBoundingClientRect();
+          return box.width > 0 && (box.right > window.innerWidth + 1 || box.left < -1);
+        }).map(node => ({tag: node.tagName, id: node.id, className: node.className, right: node.getBoundingClientRect().right})).slice(0, 20)
+      }));
+      await page.screenshot({path: path.join(output, `initial-${viewport.width}.png`), fullPage: true});
+      assert.ok(overflow.document <= overflow.viewport, "page overflows viewport: " + JSON.stringify(overflow));
       await page.locator("#severity").selectOption("error");
       assert.equal(await page.locator("#result-count").textContent(), "0 results");
       await page.locator("#severity").selectOption("warning");
